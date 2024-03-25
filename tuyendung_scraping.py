@@ -31,24 +31,32 @@ xpaths = {
     'Posted'          :".//*[name()='path'][contains(@d,'M11.99')]/ancestor::div[1]",
     'Full / Part Time':".//*[name()='path'][contains(@d,'M20 6')]/ancestor::div[1]",
     'Salary'          :".//*[name()='path'][@fill-rule='evenodd']/ancestor::div[1]",
-    'Description'     :"//div[contains(@class, 'pE8vnd')][.//div[contains(@class, 'YgLbBe')]][.//span[@class='HBvzbc']]"
+    'Description'     :".//div[contains(@class, 'YgLbBe')]//span[@class='HBvzbc']",
+    'Link'            :".//div[contains(@class, 'B8oxKe')]//a[contains(@class, 'pMhGee')]"
 }
 
 data = {key:[] for key in xpaths}
-jobs_to_do = 20
+jobs_to_do = 100
 jobs_done = 0
+
 
 while jobs_done < jobs_to_do:
     lis = driver.find_elements("xpath", "//li[@data-ved]//div[@role='treeitem']/div/div")
-    
+
+    if len(lis[jobs_done:]) == 0:
+        break
+
     for li in lis[jobs_done:]:
         li.click()
         driver.execute_script('arguments[0].scrollIntoView({block: "center", behavior: "smooth"});', li)
+        # job_block = driver.find_elements("xpath", ".//div[contains(@class, 'pE8vnd')]")
 
         for key in xpaths:
             try:
                 if key == "Description":
                     t = driver.find_elements("xpath", xpaths[key])[-1].text
+                elif key == "Link":
+                    t = driver.find_elements("xpath", xpaths[key])[-1].get_attribute("href")
                 else:
                     t = li.find_element("xpath", xpaths[key]).get_attribute('src' if key=='Logo' else 'innerText')
             except NoSuchElementException:
@@ -61,4 +69,4 @@ while jobs_done < jobs_to_do:
 
 
 df = pd.DataFrame(data)
-df.to_csv("job_vn_posted.csv", index=False)        
+df.to_csv("job_vn_posted_full.csv", index=False)        
